@@ -1,107 +1,6 @@
 // ========================
-// 📊 Export Functions (PDF & Excel)
+// 📊 Export Functions (Excel)
 // ========================
-
-// ========================
-// PDF Export
-// ========================
-
-function exportToPDF() {
-    const filteredBookings = window.TolikCRM.database.getFilteredBookings();
-    
-    if (filteredBookings.length === 0) {
-        window.TolikCRM.database.showError('Нет данных для экспорта. Добавьте заявки или измените фильтры.');
-        return;
-    }
-    
-    try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Заголовок (на английском для совместимости)
-        doc.setFontSize(20);
-        doc.setTextColor(37, 99, 235);
-        doc.text('Tolik Tours - Booking List', 20, 20);
-        
-        // Информация о экспорте
-        doc.setFontSize(12);
-        doc.setTextColor(100, 116, 139);
-        const exportDate = new Date().toLocaleDateString('en-US');
-        const exportTime = new Date().toLocaleTimeString('en-US');
-        doc.text(`Export created: ${exportDate} at ${exportTime}`, 20, 30);
-        
-        // Группируем заявки по экскурсиям и датам
-        const groupedBookings = groupBookingsByExcursionAndDate(filteredBookings);
-        
-        let yPosition = 50;
-        
-        Object.entries(groupedBookings).forEach(([key, bookings]) => {
-            const [excursionName, date] = key.split('|');
-            const totalParticipants = bookings.reduce((sum, b) => sum + b.participants, 0);
-            
-            // Заголовок экскурсии
-            doc.setFontSize(16);
-            doc.setTextColor(37, 99, 235);
-            doc.text(`${excursionName}`, 20, yPosition);
-            
-            doc.setFontSize(12);
-            doc.setTextColor(100, 116, 139);
-            doc.text(`Date: ${formatDateForPDF(new Date(date))} | Total: ${totalParticipants} people`, 20, yPosition + 8);
-            
-            yPosition += 20;
-            
-            // Таблица участников (латиницей для совместимости)
-            const tableData = bookings.map((booking, index) => [
-                index + 1,
-                convertToLatin(booking.fullName),
-                booking.contact,
-                convertToLatin(booking.hotel),
-                `${booking.participants} ppl`,
-                getPaymentStatusTextEn(booking.payment),
-                convertToLatin(booking.notes || '—')
-            ]);
-            
-            doc.autoTable({
-                startY: yPosition,
-                head: [['#', 'Full Name', 'Contact', 'Hotel', 'People', 'Payment', 'Notes']],
-                body: tableData,
-                styles: {
-                    fontSize: 9,
-                    cellPadding: 3,
-                    font: 'helvetica'
-                },
-                headStyles: {
-                    fillColor: [37, 99, 235],
-                    textColor: 255,
-                    fontSize: 10,
-                    fontStyle: 'bold'
-                },
-                alternateRowStyles: {
-                    fillColor: [248, 250, 252]
-                },
-                margin: { left: 20, right: 20 }
-            });
-            
-            yPosition = doc.lastAutoTable.finalY + 20;
-            
-            // Проверяем, нужна ли новая страница
-            if (yPosition > 250) {
-                doc.addPage();
-                yPosition = 20;
-            }
-        });
-        
-        // Сохраняем файл
-        const fileName = `tolik_tours_bookings_${new Date().toISOString().split('T')[0]}.pdf`;
-        doc.save(fileName);
-        
-        window.TolikCRM.database.showSuccess('PDF файл успешно сохранен!');
-        
-    } catch (error) {
-        console.error('Ошибка экспорта в PDF:', error);
-        window.TolikCRM.database.showError('Ошибка при создании PDF файла. Попробуйте еще раз.');
-    }
-}
 
 // ========================
 // Excel Export
@@ -206,14 +105,6 @@ function convertToLatin(text) {
     }
     
     return result;
-}
-
-function formatDateForPDF(date) {
-    return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    });
 }
 
 function getPaymentStatusTextEn(status) {
@@ -321,6 +212,5 @@ function createStatsData(bookings) {
 
 window.TolikCRM = window.TolikCRM || {};
 window.TolikCRM.exports = {
-    exportToPDF,
     exportToExcel
 };

@@ -24,58 +24,96 @@ function updateDashboardStats(allBookings) {
     if (activeExcursionsEl) activeExcursionsEl.textContent = activeExcursions;
 }
 
-function updateExcursionCounters(allBookings) {
-    const scheduleGrid = document.getElementById('weeklySchedule');
-    if (!scheduleGrid) return;
+function updateExcursionsOverview(allBookings) {
+    const excursionsContainer = document.getElementById('excursionsContainer');
+    if (!excursionsContainer) return;
     
-    const EXCURSIONS_SCHEDULE = window.TolikCRM.calendar.EXCURSIONS_SCHEDULE;
+    // Получаем все доступные экскурсии из календаря
+    const allAvailableExcursions = window.TolikCRM.calendar.getAllAvailableExcursions();
     
-    // Создаем структуру дней недели
-    const daysOfWeek = [
-        { key: 'monday', name: 'Понедельник' },
-        { key: 'tuesday', name: 'Вторник' },
-        { key: 'wednesday', name: 'Среда' },
-        { key: 'thursday', name: 'Четверг' },
-        { key: 'friday', name: 'Пятница' },
-        { key: 'saturday', name: 'Суббота' },
-        { key: 'sunday', name: 'Воскресенье' }
-    ];
+    // Группируем существующие заявки по экскурсиям
+    const groupedByExcursions = window.TolikCRM.database.groupBookingsByExcursions(allBookings);
     
-    scheduleGrid.innerHTML = daysOfWeek.map(day => {
-        const dayExcursions = EXCURSIONS_SCHEDULE[day.key] || [];
-        
-        const excursionsHTML = dayExcursions.map(excursion => {
-            // Подсчитываем участников для этой экскурсии
-            const excursionBookings = allBookings.filter(booking => 
-                booking.excursionId === excursion.id
-            );
+    // Создаем карточки для всех экскурсий
+    excursionsContainer.innerHTML = allAvailableExcursions
+        .map(excursion => {
+            const excursionName = excursion.name;
+            const dates = groupedByExcursions[excursionName] || {};
+            const hasBookings = Object.keys(dates).length > 0;
             
-            const totalParticipants = excursionBookings.reduce((sum, booking) => 
-                sum + booking.participants, 0
-            );
-            
-            // Подсчитываем количество уникальных дат
-            const uniqueDates = new Set(excursionBookings.map(b => b.date)).size;
-            const datesInfo = uniqueDates > 0 ? `на ${uniqueDates} дат${uniqueDates === 1 ? 'у' : ''}` : '';
-            
-            return `
-                <div class="excursion-badge" onclick="showExcursionDetails('${excursion.id}', '${excursion.name}')">
-                    <div class="excursion-name">${excursion.name}</div>
-                    <div class="excursion-count">${totalParticipants} чел.</div>
-                    ${datesInfo ? `<div class="excursion-dates-info">${datesInfo}</div>` : ''}
-                </div>
-            `;
+            if (hasBookings) {
+                // Есть заявки - показываем статистику и даты
+                const totalParticipants = Object.values(dates)
+                    .flat()
+                    .reduce((sum, booking) => sum + booking.participants, 0);
+                
+                const datesCount = Object.keys(dates).length;
+                
+                // Создаем список дат
+                const datesHTML = Object.entries(dates)
+                    .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
+                    .map(([date, bookings]) => {
+                        const dateParticipants = bookings.reduce((sum, booking) => sum + booking.participants, 0);
+                        const dateObj = new Date(date);
+                        const formattedDate = window.TolikCRM.database.formatDate(dateObj);
+                        const dayOfWeek = dateObj.toLocaleDateString('ru-RU', { weekday: 'short' });
+                        
+                        return `
+                            <div class="excursion-date" onclick="showExcursionDateDetails('${excursionName}', '${date}')">
+                                <div class="date-info">
+                                    <span class="date-day">${formattedDate}</span>
+                                    <span class="date-weekday">(${dayOfWeek})</span>
+                                </div>
+                                <div class="date-participants">
+                                    <i class="fas fa-users"></i>
+                                    ${dateParticipants} чел.
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                
+                return `
+                    <div class="excursion-card has-bookings">
+                        <div class="excursion-header">
+                            <div class="excursion-title">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>${excursionName}</h3>
+                            </div>
+                            <div class="excursion-stats">
+                                <span class="total-participants">${totalParticipants} чел.</span>
+                                <span class="total-dates">на ${datesCount} дат${datesCount === 1 ? 'у' : ''}</span>
+                            </div>
+                        </div>
+                        <div class="excursion-dates">
+                            ${datesHTML}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Нет заявок - показываем заглушку
+                return `
+                    <div class="excursion-card no-bookings">
+                        <div class="excursion-header">
+                            <div class="excursion-title">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>${excursionName}</h3>
+                            </div>
+                            <div class="excursion-stats">
+                                <span class="total-participants">0 чел.</span>
+                                <span class="total-dates">нет дат</span>
+                            </div>
+                        </div>
+                        <div class="excursion-dates empty">
+                            <div class="empty-state">
+                                <i class="fas fa-calendar-plus"></i>
+                                <p>Пока нет записей</p>
+                                <small>Добавьте первую заявку через форму ниже</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
         }).join('');
-        
-        return `
-            <div class="day-card">
-                <div class="day-header">${day.name}</div>
-                <div class="day-excursions">
-                    ${excursionsHTML || '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">Нет экскурсий</div>'}
-                </div>
-            </div>
-        `;
-    }).join('');
 }
 
 // ========================
@@ -222,47 +260,136 @@ function closeExcursionModal() {
     }
 }
 
+function showExcursionDateDetails(excursionName, date) {
+    const modal = document.getElementById('excursionModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalExcursionDates');
+    
+    if (!modal || !modalTitle || !modalBody) return;
+    
+    // Форматируем дату для заголовка
+    const dateObj = new Date(date);
+    const formattedDate = window.TolikCRM.database.formatDate(dateObj);
+    const dayOfWeek = dateObj.toLocaleDateString('ru-RU', { weekday: 'long' });
+    
+    // Устанавливаем заголовок
+    modalTitle.textContent = `${excursionName} — ${formattedDate} (${dayOfWeek})`;
+    
+    // Фильтруем заявки по экскурсии и дате
+    const allBookings = window.TolikCRM.database.getAllBookings();
+    const dateBookings = allBookings.filter(booking => 
+        booking.excursionName === excursionName && booking.date === date
+    );
+    
+    if (dateBookings.length === 0) {
+        modalBody.innerHTML = `
+            <div style="text-align: center; color: var(--text-secondary); padding: 40px;">
+                <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <h3>Нет участников</h3>
+                <p>На эту дату пока никто не записан</p>
+            </div>
+        `;
+    } else {
+        const totalParticipants = dateBookings.reduce((sum, booking) => sum + booking.participants, 0);
+        const getPaymentStatusText = window.TolikCRM.database.getPaymentStatusText;
+        
+        const bookingsHTML = dateBookings.map(booking => `
+            <div class="booking-item">
+                <div class="booking-main">
+                    <div class="booking-name">
+                        <i class="fas fa-user"></i>
+                        ${booking.fullName}
+                    </div>
+                    <div class="booking-participants">
+                        <i class="fas fa-users"></i>
+                        ${booking.participants} чел.
+                    </div>
+                </div>
+                <div class="booking-details">
+                    <div class="booking-detail">
+                        <i class="fas fa-phone"></i>
+                        ${booking.contact}
+                    </div>
+                    <div class="booking-detail">
+                        <i class="fas fa-building"></i>
+                        ${booking.hotel}
+                    </div>
+                    <div class="booking-detail payment-${booking.payment}">
+                        <i class="fas fa-credit-card"></i>
+                        ${getPaymentStatusText(booking.payment)}
+                    </div>
+                    ${booking.notes ? `
+                        <div class="booking-detail">
+                            <i class="fas fa-sticky-note"></i>
+                            ${booking.notes}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="booking-actions">
+                    <button class="action-btn delete" onclick="deleteBooking('${booking.id}')" title="Удалить заявку">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        modalBody.innerHTML = `
+            <div class="date-summary">
+                <h4>Всего участников: ${totalParticipants}</h4>
+                <p>Заявок: ${dateBookings.length}</p>
+            </div>
+            <div class="bookings-list">
+                ${bookingsHTML}
+            </div>
+        `;
+    }
+    
+    // Показываем модальное окно
+    modal.style.display = 'flex';
+    
+    // Закрытие по клику вне модального окна
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            closeExcursionModal();
+        }
+    };
+}
+
 // ========================
 // Form Handling
 // ========================
 
 function handleExcursionChange(e) {
+    // Теперь мы не ограничиваем календарь - любая экскурсия может быть в любой день
+    // Менеджер сам выбирает подходящую дату
+    
     const selectedValue = e.target.value;
     const dateInput = document.getElementById('date');
     
-    const calendar = window.TolikCRM.calendar;
-    
     if (selectedValue) {
-        // Находим выбранную экскурсию в расписании
-        let selectedExcursion = null;
-        let availableDays = [];
-        
-        Object.entries(calendar.EXCURSIONS_SCHEDULE).forEach(([day, excursions]) => {
-            excursions.forEach(excursion => {
-                if (excursion.id === selectedValue) {
-                    selectedExcursion = excursion;
-                    availableDays.push(day);
-                }
-            });
-        });
-        
-        if (selectedExcursion && availableDays.length > 0) {
-            // Устанавливаем ограничения на календарь
-            calendar.setupCalendarRestrictions(dateInput, availableDays);
-            
-            // Автоматически выбираем ближайшую подходящую дату
-            const nextDate = calendar.getNextAvailableDate(availableDays);
-            if (nextDate) {
-                dateInput.value = nextDate;
-            }
-            
-            // Показываем подсказку пользователю
-            calendar.showDateHint(selectedExcursion.name, availableDays);
+        // Показываем подсказку о выбранной экскурсии
+        const hint = document.getElementById('dateHint');
+        if (hint) {
+            hint.textContent = `Выберите любую дату для экскурсии "${selectedValue}"`;
+            hint.style.display = 'block';
         }
+        
+        // Устанавливаем минимальную дату - сегодня или завтра
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        dateInput.min = tomorrow.toISOString().split('T')[0];
+        
+        // Фокусируемся на поле даты для удобства
+        dateInput.focus();
     } else {
-        // Если экскурсия не выбрана, убираем ограничения
-        calendar.clearCalendarRestrictions(dateInput);
-        calendar.hideDateHint();
+        // Убираем подсказку и ограничения если экскурсия не выбрана
+        const hint = document.getElementById('dateHint');
+        if (hint) {
+            hint.style.display = 'none';
+        }
+        dateInput.min = '';
+        dateInput.value = '';
     }
 }
 
@@ -290,8 +417,8 @@ async function handleFormSubmit(e) {
             fullName: formData.get('fullName'),
             contact: formData.get('contact'),
             hotel: formData.get('hotel'),
-            excursionId: formData.get('excursion'),
-            excursionName: selectedOption.dataset.name,
+            excursionId: formData.get('excursion'), // теперь это название экскурсии
+            excursionName: formData.get('excursion'), // тоже название экскурсии
             excursionTime: selectedOption.dataset.time,
             date: formData.get('date'),
             payment: formData.get('payment'),
@@ -324,7 +451,6 @@ function setupEventListeners() {
     const filterExcursionSelect = document.getElementById('filterExcursion');
     const filterDateInput = document.getElementById('filterDate');
     const clearFiltersBtn = document.getElementById('clearFilters');
-    const exportPDFBtn = document.getElementById('exportPDF');
     const exportExcelBtn = document.getElementById('exportExcel');
     
     // Отправка формы
@@ -349,9 +475,6 @@ function setupEventListeners() {
     }
     
     // Экспорт данных
-    if (exportPDFBtn && window.TolikCRM.exports) {
-        exportPDFBtn.addEventListener('click', window.TolikCRM.exports.exportToPDF);
-    }
     if (exportExcelBtn && window.TolikCRM.exports) {
         exportExcelBtn.addEventListener('click', window.TolikCRM.exports.exportToExcel);
     }
@@ -364,9 +487,10 @@ function setupEventListeners() {
 window.TolikCRM = window.TolikCRM || {};
 window.TolikCRM.ui = {
     updateDashboardStats,
-    updateExcursionCounters,
+    updateExcursionsOverview,
     renderBookingsTable,
     showExcursionDetails,
+    showExcursionDateDetails,
     closeExcursionModal,
     handleExcursionChange,
     handleFormSubmit,
@@ -375,4 +499,5 @@ window.TolikCRM.ui = {
 
 // Make functions globally available for HTML onclick
 window.showExcursionDetails = showExcursionDetails;
+window.showExcursionDateDetails = showExcursionDateDetails;
 window.closeExcursionModal = closeExcursionModal;

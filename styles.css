@@ -114,12 +114,12 @@ body {
     font-weight: 500;
 }
 
-/* Weekly Schedule */
-.weekly-schedule {
+/* Excursions Overview */
+.excursions-overview {
     margin-bottom: 30px;
 }
 
-.weekly-schedule h2 {
+.excursions-overview h2 {
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 20px;
@@ -129,13 +129,13 @@ body {
     gap: 10px;
 }
 
-.days-grid {
+.excursions-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
 }
 
-.day-card {
+.excursion-card {
     background: var(--surface-color);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--border-color);
@@ -144,56 +144,166 @@ body {
     transition: all 0.2s;
 }
 
-.day-card:hover {
+.excursion-card:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
 
-.day-header {
+.excursion-header {
     background: linear-gradient(135deg, var(--primary-color), #3b82f6);
     color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.excursion-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.excursion-title h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.excursion-stats {
+    text-align: right;
+    font-size: 0.9rem;
+}
+
+.total-participants {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.total-dates {
+    opacity: 0.9;
+    font-size: 0.85rem;
+}
+
+.excursion-dates {
     padding: 15px;
-    text-align: center;
+}
+
+.excursion-date {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.excursion-date:last-child {
+    margin-bottom: 0;
+}
+
+.excursion-date:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateX(4px);
+}
+
+.date-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-day {
     font-weight: 600;
     font-size: 1rem;
 }
 
-.day-excursions {
-    padding: 15px;
+.date-weekday {
+    font-size: 0.85rem;
+    opacity: 0.7;
 }
 
-.excursion-badge {
-    display: block;
-    width: 100%;
-    background: var(--background-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 10px 12px;
-    margin-bottom: 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    position: relative;
+.date-participants {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    font-size: 1rem;
 }
 
-.excursion-badge:last-child {
-    margin-bottom: 0;
+/* Empty excursions styles */
+.excursion-card.no-bookings {
+    opacity: 0.8;
+    border-style: dashed;
 }
 
-.excursion-badge:hover {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-    transform: translateY(-1px);
+.excursion-card.no-bookings .excursion-header {
+    background: linear-gradient(135deg, #6b7280, #9ca3af);
+}
+
+.excursion-card.no-bookings:hover {
+    opacity: 1;
+    transform: none;
     box-shadow: var(--shadow-sm);
 }
 
-.excursion-name {
+.excursion-dates.empty {
+    padding: 20px 15px;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+}
+
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    opacity: 0.5;
+    color: var(--primary-color);
+}
+
+.empty-state p {
+    margin: 0 0 5px 0;
     font-weight: 500;
-    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+.empty-state small {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.excursion-card.has-bookings {
+    border-color: var(--success-color);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.1);
+}
+
+.no-excursions {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.no-excursions i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.no-excursions h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
 }
 
 .excursion-count {
@@ -329,10 +439,15 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 15px;
-    display: grid;
-    grid-template-columns: 2fr 1fr 2fr 1fr;
-    gap: 15px;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.booking-item:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color);
 }
 
 .booking-info {
@@ -356,6 +471,66 @@ body {
     font-weight: 600;
     color: var(--primary-color);
     font-size: 1.1rem;
+}
+
+/* Enhanced booking item styles for detailed view */
+.booking-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.booking-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.booking-detail i {
+    width: 16px;
+    margin-right: 6px;
+    opacity: 0.7;
+}
+
+.booking-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.payment-paid {
+    color: var(--success-color);
+}
+
+.payment-partial {
+    color: var(--warning-color);
+}
+
+.payment-pending {
+    color: var(--danger-color);
+}
+
+.date-summary {
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.date-summary h4 {
+    margin: 0 0 5px 0;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.date-summary p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .booking-payment {
@@ -514,17 +689,6 @@ body {
     transition: all 0.2s;
     min-width: 140px;
     justify-content: center;
-}
-
-.pdf-btn {
-    background: linear-gradient(135deg, #dc2626, #ef4444);
-    color: white;
-}
-
-.pdf-btn:hover {
-    background: linear-gradient(135deg, #b91c1c, #dc2626);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
 }
 
 .excel-btn {

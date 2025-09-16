@@ -71,104 +71,12 @@ function getAvailableDaysForExcursion(excursionName) {
     return availableDays;
 }
 
-function setupCalendarRestrictions(dateInput, availableDays) {
-    // Убираем старый обработчик если был
-    const oldHandler = dateInput._restrictionHandler;
-    if (oldHandler) {
-        dateInput.removeEventListener('input', oldHandler);
-    }
-    
-    // Устанавливаем минимальную дату (сегодня)
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.setAttribute('min', today);
-    
-    // Создаем новый обработчик ограничений
-    const restrictionHandler = function(event) {
-        const selectedDate = new Date(event.target.value);
-        const dayName = getDayNameFromDate(selectedDate);
-        
-        if (!availableDays.includes(dayName)) {
-            // Если выбранный день недели не подходит, находим ближайший подходящий
-            const nextDate = getNextAvailableDateFromDate(selectedDate, availableDays);
-            if (nextDate) {
-                event.target.value = nextDate;
-                showError(`Эта экскурсия проводится только в ${getReadableDayNames(availableDays)}. Выбрана ближайшая подходящая дата.`);
-            }
-        }
-    };
-    
-    // Сохраняем ссылку на обработчик и добавляем его
-    dateInput._restrictionHandler = restrictionHandler;
-    dateInput.addEventListener('input', restrictionHandler);
-}
-
-function clearCalendarRestrictions(dateInput) {
-    const oldHandler = dateInput._restrictionHandler;
-    if (oldHandler) {
-        dateInput.removeEventListener('input', oldHandler);
-        dateInput._restrictionHandler = null;
-    }
-    dateInput.removeAttribute('min');
-}
-
 // ========================
-// Date Calculation
+// Date Calculation (simplified - no restrictions)
 // ========================
 
-function getNextAvailableDate(availableDays, fromDate = new Date()) {
-    const dayIndices = {
-        'monday': 1, 'tuesday': 2, 'wednesday': 3, 'thursday': 4,
-        'friday': 5, 'saturday': 6, 'sunday': 0
-    };
-    
-    // Получаем индексы доступных дней
-    const availableIndices = availableDays.map(day => dayIndices[day]);
-    
-    let checkDate = new Date(fromDate);
-    
-    // Ищем ближайший подходящий день (максимум 14 дней вперед)
-    for (let i = 0; i < 14; i++) {
-        const dayIndex = checkDate.getDay();
-        
-        if (availableIndices.includes(dayIndex)) {
-            return checkDate.toISOString().split('T')[0];
-        }
-        
-        checkDate.setDate(checkDate.getDate() + 1);
-    }
-    
-    // Если не нашли, возвращаем сегодня + 1 день
-    return new Date(Date.now() + 86400000).toISOString().split('T')[0];
-}
-
-function getNextAvailableDateFromDate(fromDate, availableDays) {
-    // Ищем ближайшую подходящую дату в течение следующих 30 дней от выбранной даты
-    for (let i = 0; i < 30; i++) {
-        const testDate = new Date(fromDate);
-        testDate.setDate(fromDate.getDate() + i);
-        
-        const dayName = getDayNameFromDate(testDate);
-        if (availableDays.includes(dayName)) {
-            return testDate.toISOString().split('T')[0];
-        }
-    }
-    
-    return null;
-}
-
-function getReadableDayNames(dayKeys) {
-    const dayNames = {
-        'monday': 'понедельники',
-        'tuesday': 'вторники', 
-        'wednesday': 'среды',
-        'thursday': 'четверги',
-        'friday': 'пятницы',
-        'saturday': 'субботы',
-        'sunday': 'воскресенья'
-    };
-    
-    return dayKeys.map(key => dayNames[key]).join(', ');
-}
+// Removed old restriction functions - no longer needed
+// All dates are now available for all excursions
 
 // ========================
 // Populate Selects
@@ -178,39 +86,38 @@ function populateExcursionSelects() {
     const excursionSelect = document.getElementById('excursion');
     const filterExcursionSelect = document.getElementById('filterExcursion');
     
+    if (!excursionSelect || !filterExcursionSelect) return;
+    
     // Очищаем селекты
     excursionSelect.innerHTML = '<option value="">Выберите экскурсию</option>';
     filterExcursionSelect.innerHTML = '<option value="">Все экскурсии</option>';
     
-    // Заполняем селекты экскурсиями БЕЗ времени
-    Object.entries(EXCURSIONS_SCHEDULE).forEach(([day, excursions]) => {
-        excursions.forEach(excursion => {
-            const dayName = getDayName(day);
-            const optionText = `${excursion.name} (${dayName})`;
-            
-            // Для формы добавления
-            const option1 = document.createElement('option');
-            option1.value = excursion.id;
-            option1.textContent = optionText;
-            option1.dataset.day = day;
-            option1.dataset.name = excursion.name;
-            option1.dataset.time = excursion.time;
-            excursionSelect.appendChild(option1);
-            
-            // Для фильтра
-            const option2 = document.createElement('option');
-            option2.value = excursion.id;
-            option2.textContent = optionText;
-            filterExcursionSelect.appendChild(option2);
-        });
+    // Получаем уникальные экскурсии из календаря
+    const uniqueExcursions = getAllAvailableExcursions();
+    
+    // Заполняем селекты уникальными экскурсиями БЕЗ привязки к дням
+    uniqueExcursions.forEach(excursion => {
+        // Для формы добавления
+        const option1 = document.createElement('option');
+        option1.value = excursion.name; // используем название как id
+        option1.textContent = excursion.name;
+        option1.dataset.name = excursion.name;
+        option1.dataset.time = excursion.time;
+        excursionSelect.appendChild(option1);
+        
+        // Для фильтра
+        const option2 = document.createElement('option');
+        option2.value = excursion.name;
+        option2.textContent = excursion.name;
+        filterExcursionSelect.appendChild(option2);
     });
 }
 
 // ========================
-// Date Hints
+// Date Hints (simplified)
 // ========================
 
-function showDateHint(excursionName, availableDays) {
+function showDateHint(message) {
     let hintElement = document.getElementById('dateHint');
     if (!hintElement) {
         hintElement = document.createElement('div');
@@ -218,19 +125,44 @@ function showDateHint(excursionName, availableDays) {
         hintElement.className = 'date-hint';
         
         const dateInput = document.getElementById('date');
-        dateInput.parentNode.insertBefore(hintElement, dateInput.nextSibling);
+        if (dateInput && dateInput.parentNode) {
+            dateInput.parentNode.insertBefore(hintElement, dateInput.nextSibling);
+        }
     }
     
-    const dayNames = getReadableDayNames(availableDays);
-    hintElement.innerHTML = `<i class="fas fa-info-circle"></i> Экскурсия "${excursionName}" проводится в: ${dayNames}`;
+    hintElement.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
     hintElement.style.display = 'block';
 }
 
 function hideDateHint() {
-    const hintElement = document.getElementById('dateHint');
-    if (hintElement) {
-        hintElement.style.display = 'none';
+    const hint = document.getElementById('dateHint');
+    if (hint) {
+        hint.style.display = 'none';
     }
+}
+
+// ========================
+// Get All Available Excursions
+// ========================
+
+function getAllAvailableExcursions() {
+    const excursionsMap = new Map();
+    
+    // Проходим по всем дням недели и собираем уникальные экскурсии
+    Object.values(EXCURSIONS_SCHEDULE).forEach(dayExcursions => {
+        dayExcursions.forEach(excursion => {
+            if (!excursionsMap.has(excursion.name)) {
+                excursionsMap.set(excursion.name, {
+                    id: excursion.id,
+                    name: excursion.name,
+                    time: excursion.time
+                });
+            }
+        });
+    });
+    
+    // Возвращаем массив уникальных экскурсий, отсортированный по названию
+    return Array.from(excursionsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // ========================
@@ -243,12 +175,8 @@ window.TolikCRM.calendar = {
     getDayName,
     getDayNameFromDate,
     getAvailableDaysForExcursion,
-    setupCalendarRestrictions,
-    clearCalendarRestrictions,
-    getNextAvailableDate,
-    getNextAvailableDateFromDate,
-    getReadableDayNames,
     populateExcursionSelects,
     showDateHint,
-    hideDateHint
+    hideDateHint,
+    getAllAvailableExcursions
 };

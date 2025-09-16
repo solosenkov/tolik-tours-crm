@@ -31,7 +31,7 @@ function setupFirestoreListeners() {
         applyFilters();
         if (window.TolikCRM.ui) {
             window.TolikCRM.ui.updateDashboardStats(allBookings);
-            window.TolikCRM.ui.updateExcursionCounters(allBookings);
+            window.TolikCRM.ui.updateExcursionsOverview(allBookings);
         }
         
     }, (error) => {
@@ -118,7 +118,8 @@ function applyFilters() {
     const dateFilter = filterDateInput?.value || '';
     
     filteredBookings = allBookings.filter(booking => {
-        const matchesExcursion = !excursionFilter || booking.excursionId === excursionFilter;
+        // Теперь фильтруем по названию экскурсии (excursionName)
+        const matchesExcursion = !excursionFilter || booking.excursionName === excursionFilter;
         const matchesDate = !dateFilter || booking.date === dateFilter;
         
         return matchesExcursion && matchesDate;
@@ -162,6 +163,29 @@ function groupBookingsByExcursionAndDate(bookings) {
         }
         groups[key].push(booking);
         return groups;
+    }, {});
+}
+
+// Новая функция: группировка по экскурсиям (excursion -> dates -> participants)
+function groupBookingsByExcursions(bookings) {
+    return bookings.reduce((excursions, booking) => {
+        const excursionName = booking.excursionName;
+        const date = booking.date;
+        
+        // Создаем экскурсию если не существует
+        if (!excursions[excursionName]) {
+            excursions[excursionName] = {};
+        }
+        
+        // Создаем дату если не существует
+        if (!excursions[excursionName][date]) {
+            excursions[excursionName][date] = [];
+        }
+        
+        // Добавляем участника к дате
+        excursions[excursionName][date].push(booking);
+        
+        return excursions;
     }, {});
 }
 
@@ -255,6 +279,7 @@ window.TolikCRM.database = {
     clearFilters,
     groupBookingsByDate,
     groupBookingsByExcursionAndDate,
+    groupBookingsByExcursions,
     formatDate,
     getPaymentStatusText,
     showLoading,
