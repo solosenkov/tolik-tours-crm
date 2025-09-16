@@ -335,8 +335,16 @@ function showExcursionDateDetails(excursionName, date) {
         
         modalBody.innerHTML = `
             <div class="date-summary">
-                <h4>Всего участников: ${totalParticipants}</h4>
-                <p>Заявок: ${dateBookings.length}</p>
+                <div class="summary-info">
+                    <h4>Всего участников: ${totalParticipants}</h4>
+                    <p>Заявок: ${dateBookings.length}</p>
+                </div>
+                <div class="summary-actions">
+                    <button class="export-group-btn" onclick="exportGroupToExcel('${excursionName}', '${date}')" title="Скачать список группы в Excel">
+                        <i class="fas fa-file-excel"></i>
+                        Скачать группу
+                    </button>
+                </div>
             </div>
             <div class="bookings-list">
                 ${bookingsHTML}

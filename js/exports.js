@@ -77,6 +77,90 @@ function exportToExcel() {
 }
 
 // ========================
+// Group Excel Export
+// ========================
+
+function exportGroupToExcel(excursionName, date) {
+    // Получаем всех участников конкретной экскурсии на конкретную дату
+    const allBookings = window.TolikCRM.database.getAllBookings();
+    const groupBookings = allBookings.filter(booking => 
+        booking.excursionName === excursionName && booking.date === date
+    );
+    
+    if (groupBookings.length === 0) {
+        window.TolikCRM.database.showError('Нет участников в этой группе для экспорта.');
+        return;
+    }
+    
+    try {
+        const formatDate = window.TolikCRM.database.formatDate;
+        const getPaymentStatusText = window.TolikCRM.database.getPaymentStatusText;
+        
+        // Подготавливаем данные для гида - простая и удобная структура
+        const groupData = groupBookings.map((booking, index) => ({
+            '№': index + 1,
+            'ФИО': booking.fullName,
+            'Телефон': booking.contact,
+            'Отель': booking.hotel,
+            'Участников': booking.participants + ' чел.',
+            'Оплата': getPaymentStatusText(booking.payment),
+            'Примечания': booking.notes || '—'
+        }));
+        
+        // Создаем рабочую книгу
+        const wb = XLSX.utils.book_new();
+        
+        // Создаем лист с данными группы
+        const ws = XLSX.utils.json_to_sheet(groupData);
+        
+        // Настраиваем ширину столбцов для оптимального отображения
+        ws['!cols'] = [
+            { wch: 5 },   // №
+            { wch: 25 },  // ФИО
+            { wch: 18 },  // Телефон
+            { wch: 30 },  // Отель
+            { wch: 12 },  // Участников
+            { wch: 15 },  // Оплата
+            { wch: 35 }   // Примечания
+        ];
+        
+        // Добавляем лист в книгу с понятным названием
+        const dateObj = new Date(date);
+        const formattedDate = formatDate(dateObj);
+        const sheetName = `${excursionName} ${formattedDate}`;
+        XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31)); // Excel ограничение на 31 символ
+        
+        // Создаем заголовок и статистику в самом файле
+        const totalParticipants = groupBookings.reduce((sum, booking) => sum + booking.participants, 0);
+        const dayOfWeek = dateObj.toLocaleDateString('ru-RU', { weekday: 'long' });
+        
+        // Добавляем итоги в конец таблицы
+        const summaryData = [
+            {},
+            { '№': '', 'ФИО': 'ИТОГО:', 'Телефон': '', 'Отель': '', 'Участников': `${totalParticipants} чел.`, 'Оплата': `${groupBookings.length} заявок`, 'Примечания': '' },
+            { '№': '', 'ФИО': 'Дата:', 'Телефон': '', 'Отель': '', 'Участников': formattedDate, 'Оплата': dayOfWeek, 'Примечания': '' },
+            { '№': '', 'ФИО': 'Экскурсия:', 'Телефон': '', 'Отель': excursionName, 'Участников': '', 'Оплата': '', 'Примечания': '' }
+        ];
+        
+        const summaryWs = XLSX.utils.json_to_sheet([...groupData, ...summaryData]);
+        summaryWs['!cols'] = ws['!cols'];
+        
+        // Заменяем лист на тот, что с итогами
+        wb.Sheets[sheetName.slice(0, 31)] = summaryWs;
+        
+        // Сохраняем файл с понятным именем для гида
+        const fileName = `${excursionName}_${formattedDate.replace(/\./g, '-')}_${totalParticipants}чел.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        
+        window.TolikCRM.database.showSuccess(`Excel файл для гида "${fileName}" готов!`);
+        
+    } catch (error) {
+        console.error('Ошибка создания Excel для группы:', error);
+        window.TolikCRM.database.showError('Ошибка при создании Excel файла для группы. Попробуйте еще раз.');
+    }
+}
+
+// ========================
 // Helper Functions
 // ========================
 
@@ -212,5 +296,9 @@ function createStatsData(bookings) {
 
 window.TolikCRM = window.TolikCRM || {};
 window.TolikCRM.exports = {
-    exportToExcel
+    exportToExcel,
+    exportGroupToExcel
 };
+
+// Make functions globally available for HTML onclick
+window.exportGroupToExcel = exportGroupToExcel;

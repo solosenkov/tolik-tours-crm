@@ -518,7 +518,14 @@ body {
     border-radius: var(--border-radius);
     padding: 15px;
     margin-bottom: 20px;
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.summary-info {
+    text-align: left;
 }
 
 .date-summary h4 {
@@ -531,6 +538,40 @@ body {
     margin: 0;
     color: var(--text-secondary);
     font-size: 0.9rem;
+}
+
+.summary-actions {
+    flex-shrink: 0;
+}
+
+.export-group-btn {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.export-group-btn:hover {
+    background: linear-gradient(135deg, #047857, #059669);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.export-group-btn:active {
+    transform: translateY(0);
+}
+
+.export-group-btn i {
+    font-size: 1rem;
 }
 
 .booking-payment {
