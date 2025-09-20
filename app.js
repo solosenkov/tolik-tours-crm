@@ -36,10 +36,13 @@ async function initializeComponents() {
     // 1. Populate excursion selects from calendar module
     window.TolikCRM.calendar.populateExcursionSelects();
     
-    // 2. Setup event listeners from UI module
+    // 2. Setup navigation between pages
+    window.TolikCRM.ui.setupNavigation();
+    
+    // 3. Setup event listeners from UI module
     window.TolikCRM.ui.setupEventListeners();
     
-    // 3. Setup Firestore listeners from database module
+    // 4. Setup Firestore listeners from database module
     window.TolikCRM.database.setupFirestoreListeners();
 }
 

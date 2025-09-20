@@ -489,6 +489,60 @@ function setupEventListeners() {
 }
 
 // ========================
+// Navigation Functions
+// ========================
+
+function setupNavigation() {
+    // Получаем кнопки навигации
+    const navBookings1 = document.getElementById('navBookings');
+    const navBookings2 = document.getElementById('navBookings2');
+    const navFinances1 = document.getElementById('navFinances');
+    const navFinances2 = document.getElementById('navFinances2');
+    
+    const bookingsPage = document.getElementById('bookingsPage');
+    const financesPage = document.getElementById('financesPage');
+    
+    // Функция переключения на страницу заявок
+    function showBookingsPage() {
+        bookingsPage.classList.add('active');
+        financesPage.classList.remove('active');
+        
+        // Обновляем состояние кнопок
+        [navBookings1, navBookings2].forEach(btn => {
+            if (btn) btn.classList.add('active');
+        });
+        [navFinances1, navFinances2].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+    }
+    
+    // Функция переключения на финансовую страницу
+    function showFinancesPage() {
+        financesPage.classList.add('active');
+        bookingsPage.classList.remove('active');
+        
+        // Обновляем состояние кнопок
+        [navFinances1, navFinances2].forEach(btn => {
+            if (btn) btn.classList.add('active');
+        });
+        [navBookings1, navBookings2].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        
+        // Инициализируем финансовый модуль при первом открытии
+        if (window.TolikCRM.finance && window.TolikCRM.finance.initFinancePage) {
+            window.TolikCRM.finance.initFinancePage();
+        }
+    }
+    
+    // Навешиваем обработчики
+    if (navBookings1) navBookings1.addEventListener('click', showBookingsPage);
+    if (navBookings2) navBookings2.addEventListener('click', showBookingsPage);
+    if (navFinances1) navFinances1.addEventListener('click', showFinancesPage);
+    if (navFinances2) navFinances2.addEventListener('click', showFinancesPage);
+}
+
+// ========================
 // Export to global namespace
 // ========================
 
@@ -502,7 +556,8 @@ window.TolikCRM.ui = {
     closeExcursionModal,
     handleExcursionChange,
     handleFormSubmit,
-    setupEventListeners
+    setupEventListeners,
+    setupNavigation
 };
 
 // Make functions globally available for HTML onclick

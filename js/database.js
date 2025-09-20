@@ -34,6 +34,14 @@ function setupFirestoreListeners() {
             window.TolikCRM.ui.updateExcursionsOverview(allBookings);
         }
         
+        // Обновляем финансовые данные если финансовая страница активна
+        if (window.TolikCRM.finance && document.getElementById('financesPage') && 
+            document.getElementById('financesPage').classList.contains('active')) {
+            const financialData = window.TolikCRM.finance.calculateFinancialReport(allBookings);
+            window.TolikCRM.finance.updateFinancialStats(financialData.summary);
+            window.TolikCRM.finance.renderFinancialTable(Object.values(financialData.byExcursion));
+        }
+        
     }, (error) => {
         console.error('Ошибка получения данных:', error);
         showError('Ошибка загрузки данных из базы');

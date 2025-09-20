@@ -1052,3 +1052,292 @@ body {
         opacity: 1;
     }
 }
+
+/* ============================================
+   NAVIGATION STYLES
+   ============================================ */
+
+.main-nav {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.nav-btn.active {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.nav-btn i {
+    font-size: 16px;
+}
+
+/* ============================================
+   PAGE CONTENT STYLES
+   ============================================ */
+
+.page-content {
+    display: none;
+}
+
+.page-content.active {
+    display: block;
+}
+
+/* ============================================
+   FINANCES PAGE STYLES
+   ============================================ */
+
+.finances-header {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    color: white;
+    padding: 30px;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-lg);
+}
+
+.financial-stats {
+    margin-bottom: 30px;
+}
+
+.financial-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-left: 4px solid var(--success-color);
+}
+
+.financial-card .stat-icon {
+    background: var(--success-color);
+}
+
+.financial-filters {
+    background: var(--surface-color);
+    padding: 25px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: 30px;
+}
+
+.filters-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 180px;
+}
+
+.filter-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-select, .filter-input {
+    padding: 10px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus, .filter-input:focus {
+    outline: none;
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.date-range {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.date-range .filter-input {
+    width: 140px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.apply-filters-btn {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.apply-filters-btn:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   FINANCIAL TABLE STYLES
+   ============================================ */
+
+.financial-table-section {
+    background: var(--surface-color);
+    padding: 30px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.financial-table-section h2 {
+    margin-bottom: 25px;
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.financial-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.financial-table th {
+    background: #f8fafc;
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: left;
+    padding: 15px 12px;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.financial-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.financial-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.financial-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Financial Amount Styles */
+.amount-positive {
+    color: var(--success-color);
+    font-weight: 600;
+}
+
+.amount-pending {
+    color: var(--warning-color);
+    font-weight: 600;
+}
+
+.amount-zero {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* ============================================
+   NO DATA STATE
+   ============================================ */
+
+.no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.no-data i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.no-data p {
+    font-size: 18px;
+    margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN FOR FINANCES
+   ============================================ */
+
+@media (max-width: 768px) {
+    .filters-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .filter-actions {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+    
+    .financial-table {
+        font-size: 12px;
+    }
+    
+    .financial-table th,
+    .financial-table td {
+        padding: 10px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .nav-btn {
+        justify-content: center;
+        width: 100%;
+    }
+}

@@ -10,13 +10,27 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1><i class="fas fa-code"></i> Запись на экскурсию</h1>
-                <p>Записываем туристов на экскурсии</p>
-            </div>
-        </header>
+        <!-- Bookings Page (default) -->
+        <div id="bookingsPage" class="page-content active">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-content">
+                    <h1><i class="fas fa-code"></i> Запись на экскурсию</h1>
+                    <p>Записываем туристов на экскурсии</p>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="main-nav">
+                    <button id="navBookings" class="nav-btn active">
+                        <i class="fas fa-list"></i>
+                        Заявки
+                    </button>
+                    <button id="navFinances" class="nav-btn">
+                        <i class="fas fa-chart-line"></i>
+                        Финансы
+                    </button>
+                </nav>
+            </header>
 
         <!-- Dashboard Stats -->
         <section class="dashboard-stats">
@@ -192,6 +206,137 @@
                 <p>Заявок пока нет</p>
             </div>
         </section>
+        </div>
+        
+        <!-- Finances Page -->
+        <div id="financesPage" class="page-content">
+            <!-- Finances Header -->
+            <header class="finances-header">
+                <div class="header-content">
+                    <h1><i class="fas fa-chart-line"></i> Финансовая отчетность</h1>
+                    <p>Доходы и статистика по экскурсиям</p>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="main-nav">
+                    <button id="navBookings2" class="nav-btn">
+                        <i class="fas fa-list"></i>
+                        Заявки
+                    </button>
+                    <button id="navFinances2" class="nav-btn active">
+                        <i class="fas fa-chart-line"></i>
+                        Финансы
+                    </button>
+                </nav>
+            </header>
+
+            <!-- Financial Summary Stats -->
+            <section class="financial-stats">
+                <div class="stats-grid">
+                    <div class="stat-card financial-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalRevenue">$0</h3>
+                            <p>Общий доход</p>
+                        </div>
+                    </div>
+                    <div class="stat-card financial-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="pendingRevenue">$0</h3>
+                            <p>К оплате</p>
+                        </div>
+                    </div>
+                    <div class="stat-card financial-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="paidRevenue">$0</h3>
+                            <p>Оплачено</p>
+                        </div>
+                    </div>
+                    <div class="stat-card financial-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="paymentRate">0%</h3>
+                            <p>Доля оплат</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Financial Filters -->
+            <section class="financial-filters">
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label for="financeFilterPeriod">Период:</label>
+                        <select id="financeFilterPeriod" class="filter-select">
+                            <option value="all">За все время</option>
+                            <option value="week">За неделю</option>
+                            <option value="month">За месяц</option>
+                            <option value="custom">Произвольный</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="financeFilterExcursion">Экскурсия:</label>
+                        <select id="financeFilterExcursion" class="filter-select">
+                            <option value="">Все экскурсии</option>
+                        </select>
+                    </div>
+                    <div class="filter-group date-range" id="customDateRange" style="display: none;">
+                        <input type="date" id="financeStartDate" class="filter-input">
+                        <input type="date" id="financeEndDate" class="filter-input">
+                    </div>
+                    <div class="filter-actions">
+                        <button id="applyFinanceFilters" class="apply-filters-btn">
+                            <i class="fas fa-filter"></i>
+                            Применить
+                        </button>
+                        <button id="exportFinanceReport" class="export-btn">
+                            <i class="fas fa-file-excel"></i>
+                            Экспорт отчета
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Financial Table -->
+            <section class="financial-table-section">
+                <h2><i class="fas fa-table"></i> Доходы по экскурсиям</h2>
+                <div class="table-container">
+                    <table class="financial-table">
+                        <thead>
+                            <tr>
+                                <th>Экскурсия</th>
+                                <th>Количество заявок</th>
+                                <th>Всего участников</th>
+                                <th>Ожидает оплаты</th>
+                                <th>Частично оплачено</th>
+                                <th>Полностью оплачено</th>
+                                <th>Общий доход</th>
+                                <th>Получено</th>
+                                <th>К доплате</th>
+                            </tr>
+                        </thead>
+                        <tbody id="financialTableBody">
+                            <!-- Динамически заполняется JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="noFinancialData" class="no-data" style="display: none;">
+                    <i class="fas fa-chart-line"></i>
+                    <p>Финансовых данных для выбранного периода нет</p>
+                </div>
+            </section>
+        </div>
     </div>
 
     <!-- Loading Overlay -->
@@ -230,6 +375,7 @@
     <script src="js/calendar.js"></script>
     <script src="js/database.js"></script>
     <script src="js/exports.js"></script>
+    <script src="js/finance.js"></script>
     <script src="js/ui.js"></script>
     <script src="app.js"></script>
 </body>
