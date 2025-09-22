@@ -28,8 +28,21 @@ function updateExcursionsOverview(allBookings) {
     const excursionsContainer = document.getElementById('excursionsContainer');
     if (!excursionsContainer) return;
     
-    // Получаем все доступные экскурсии из календаря
-    const allAvailableExcursions = window.TolikCRM.calendar.getAllAvailableExcursions();
+    // Получаем все доступные экскурсии из модуля туров
+    let allAvailableExcursions = [];
+    if (window.TolikCRM.tours && window.TolikCRM.tours.getAllTours) {
+        // Используем новую систему туров
+        allAvailableExcursions = window.TolikCRM.tours.getAllTours()
+            .filter(tour => tour.isActive)
+            .map(tour => ({
+                id: tour.id,
+                name: tour.name,
+                time: tour.departureTime + ' - ' + tour.returnTime
+            }));
+    } else {
+        // Fallback к старой системе календаря
+        allAvailableExcursions = window.TolikCRM.calendar.getAllAvailableExcursions();
+    }
     
     // Группируем существующие заявки по экскурсиям
     const groupedByExcursions = window.TolikCRM.database.groupBookingsByExcursions(allBookings);
@@ -418,16 +431,25 @@ async function handleFormSubmit(e) {
         showLoading(true);
         
         const formData = new FormData(bookingForm);
-        const selectedOption = excursionSelect.selectedOptions[0];
+        const excursionName = formData.get('excursion');
+        
+        // Получаем информацию об экскурсии из модуля tours
+        let excursionTime = '';
+        if (window.TolikCRM.tours && window.TolikCRM.tours.getTourByName) {
+            const tour = window.TolikCRM.tours.getTourByName(excursionName);
+            if (tour) {
+                excursionTime = `${tour.departureTime} - ${tour.returnTime}`;
+            }
+        }
         
         const bookingData = {
             participants: parseInt(formData.get('participants')),
             fullName: formData.get('fullName'),
             contact: formData.get('contact'),
             hotel: formData.get('hotel'),
-            excursionId: formData.get('excursion'), // теперь это название экскурсии
-            excursionName: formData.get('excursion'), // тоже название экскурсии
-            excursionTime: selectedOption.dataset.time,
+            excursionId: excursionName, // используем название экскурсии как ID
+            excursionName: excursionName, // название экскурсии
+            excursionTime: excursionTime, // время из данных экскурсии
             date: formData.get('date'),
             payment: formData.get('payment'),
             notes: formData.get('notes') || ''
@@ -496,36 +518,75 @@ function setupNavigation() {
     // Получаем кнопки навигации
     const navBookings1 = document.getElementById('navBookings');
     const navBookings2 = document.getElementById('navBookings2');
+    const navBookings3 = document.getElementById('navBookings3');
+    
+    const navTours1 = document.getElementById('navTours');
+    const navTours2 = document.getElementById('navTours2');
+    const navTours3 = document.getElementById('navTours3');
+    
     const navFinances1 = document.getElementById('navFinances');
     const navFinances2 = document.getElementById('navFinances2');
+    const navFinances3 = document.getElementById('navFinances3');
     
     const bookingsPage = document.getElementById('bookingsPage');
+    const toursPage = document.getElementById('toursPage');
     const financesPage = document.getElementById('financesPage');
     
     // Функция переключения на страницу заявок
     function showBookingsPage() {
         bookingsPage.classList.add('active');
+        toursPage.classList.remove('active');
         financesPage.classList.remove('active');
         
         // Обновляем состояние кнопок
-        [navBookings1, navBookings2].forEach(btn => {
+        [navBookings1, navBookings2, navBookings3].forEach(btn => {
             if (btn) btn.classList.add('active');
         });
-        [navFinances1, navFinances2].forEach(btn => {
+        [navTours1, navTours2, navTours3].forEach(btn => {
             if (btn) btn.classList.remove('active');
         });
+        [navFinances1, navFinances2, navFinances3].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+    }
+    
+    // Функция переключения на страницу экскурсий
+    function showToursPage() {
+        toursPage.classList.add('active');
+        bookingsPage.classList.remove('active');
+        financesPage.classList.remove('active');
+        
+        // Обновляем состояние кнопок
+        [navTours1, navTours2, navTours3].forEach(btn => {
+            if (btn) btn.classList.add('active');
+        });
+        [navBookings1, navBookings2, navBookings3].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        [navFinances1, navFinances2, navFinances3].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        
+        // Инициализируем модуль экскурсий при первом открытии
+        if (window.TolikCRM.tours && window.TolikCRM.tours.initToursPage) {
+            window.TolikCRM.tours.initToursPage();
+        }
     }
     
     // Функция переключения на финансовую страницу
     function showFinancesPage() {
         financesPage.classList.add('active');
         bookingsPage.classList.remove('active');
+        toursPage.classList.remove('active');
         
         // Обновляем состояние кнопок
-        [navFinances1, navFinances2].forEach(btn => {
+        [navFinances1, navFinances2, navFinances3].forEach(btn => {
             if (btn) btn.classList.add('active');
         });
-        [navBookings1, navBookings2].forEach(btn => {
+        [navBookings1, navBookings2, navBookings3].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        [navTours1, navTours2, navTours3].forEach(btn => {
             if (btn) btn.classList.remove('active');
         });
         
@@ -535,11 +596,38 @@ function setupNavigation() {
         }
     }
     
-    // Навешиваем обработчики
+    // Навешиваем обработчики для заявок
     if (navBookings1) navBookings1.addEventListener('click', showBookingsPage);
     if (navBookings2) navBookings2.addEventListener('click', showBookingsPage);
+    if (navBookings3) navBookings3.addEventListener('click', showBookingsPage);
+    
+    // Навешиваем обработчики для экскурсий
+    if (navTours1) navTours1.addEventListener('click', showToursPage);
+    if (navTours2) navTours2.addEventListener('click', showToursPage);
+    if (navTours3) navTours3.addEventListener('click', showToursPage);
+    
+    // Навешиваем обработчики для финансов
     if (navFinances1) navFinances1.addEventListener('click', showFinancesPage);
     if (navFinances2) navFinances2.addEventListener('click', showFinancesPage);
+    if (navFinances3) navFinances3.addEventListener('click', showFinancesPage);
+}
+
+// ========================
+// Refresh Dashboard Function
+// ========================
+
+async function refreshDashboard() {
+    try {
+        // Получаем свежие данные бронирований
+        const allBookings = await window.TolikCRM.database.getAllBookings();
+        
+        // Обновляем статистику и карточки экскурсий
+        updateDashboardStats(allBookings);
+        updateExcursionsOverview(allBookings);
+        
+    } catch (error) {
+        console.error('Error refreshing dashboard:', error);
+    }
 }
 
 // ========================
@@ -557,7 +645,8 @@ window.TolikCRM.ui = {
     handleExcursionChange,
     handleFormSubmit,
     setupEventListeners,
-    setupNavigation
+    setupNavigation,
+    refreshDashboard
 };
 
 // Make functions globally available for HTML onclick

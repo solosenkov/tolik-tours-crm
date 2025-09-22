@@ -33,16 +33,23 @@ async function initializeApp() {
 }
 
 async function initializeComponents() {
-    // 1. Populate excursion selects from calendar module
-    window.TolikCRM.calendar.populateExcursionSelects();
+    // 1. Initialize tours data first (needed for excursion selects and pricing)
+    if (window.TolikCRM.tours && window.TolikCRM.tours.initializeToursData) {
+        await window.TolikCRM.tours.initializeToursData();
+    }
     
-    // 2. Setup navigation between pages
+    // 2. Populate excursion selects from tours module
+    if (window.TolikCRM.tours && window.TolikCRM.tours.updateExcursionSelects) {
+        window.TolikCRM.tours.updateExcursionSelects();
+    }
+    
+    // 3. Setup navigation between pages
     window.TolikCRM.ui.setupNavigation();
     
-    // 3. Setup event listeners from UI module
+    // 4. Setup event listeners from UI module
     window.TolikCRM.ui.setupEventListeners();
     
-    // 4. Setup Firestore listeners from database module
+    // 5. Setup Firestore listeners from database module
     window.TolikCRM.database.setupFirestoreListeners();
 }
 

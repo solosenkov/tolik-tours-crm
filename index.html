@@ -25,6 +25,10 @@
                         <i class="fas fa-list"></i>
                         Заявки
                     </button>
+                    <button id="navTours" class="nav-btn">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Экскурсии
+                    </button>
                     <button id="navFinances" class="nav-btn">
                         <i class="fas fa-chart-line"></i>
                         Финансы
@@ -208,6 +212,75 @@
         </section>
         </div>
         
+        <!-- Tours Management Page -->
+        <div id="toursPage" class="page-content">
+            <!-- Tours Header -->
+            <header class="tours-header">
+                <div class="header-content">
+                    <h1><i class="fas fa-map-marked-alt"></i> Управление экскурсиями</h1>
+                    <p>Редактирование цен, описаний и расписания экскурсий</p>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="main-nav">
+                    <button id="navBookings3" class="nav-btn">
+                        <i class="fas fa-list"></i>
+                        Заявки
+                    </button>
+                    <button id="navTours3" class="nav-btn active">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Экскурсии
+                    </button>
+                    <button id="navFinances3" class="nav-btn">
+                        <i class="fas fa-chart-line"></i>
+                        Финансы
+                    </button>
+                </nav>
+            </header>
+
+            <!-- Tours Actions -->
+            <section class="tours-actions">
+                <div class="actions-row">
+                    <div class="action-group">
+                        <button id="addNewTour" class="add-tour-btn">
+                            <i class="fas fa-plus"></i>
+                            Добавить экскурсию
+                        </button>
+                        <button id="importToursFromFile" class="import-btn">
+                            <i class="fas fa-file-import"></i>
+                            Импорт из файла
+                        </button>
+                    </div>
+                    <div class="action-group">
+                        <button id="exportToursList" class="export-btn">
+                            <i class="fas fa-file-excel"></i>
+                            Экспорт списка
+                        </button>
+                        <button id="bulkPriceUpdate" class="bulk-update-btn">
+                            <i class="fas fa-percentage"></i>
+                            Массовое изменение цен
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tours Grid -->
+            <section class="tours-grid-section">
+                <h2><i class="fas fa-th-large"></i> Список экскурсий</h2>
+                <div id="toursGrid" class="tours-grid">
+                    <!-- Динамически заполняется JS -->
+                </div>
+
+                <div id="noToursData" class="no-data" style="display: none;">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <p>Экскурсии еще не добавлены</p>
+                    <button class="btn-primary" onclick="document.getElementById('addNewTour').click()">
+                        Добавить первую экскурсию
+                    </button>
+                </div>
+            </section>
+        </div>
+        
         <!-- Finances Page -->
         <div id="financesPage" class="page-content">
             <!-- Finances Header -->
@@ -222,6 +295,10 @@
                     <button id="navBookings2" class="nav-btn">
                         <i class="fas fa-list"></i>
                         Заявки
+                    </button>
+                    <button id="navTours2" class="nav-btn">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Экскурсии
                     </button>
                     <button id="navFinances2" class="nav-btn active">
                         <i class="fas fa-chart-line"></i>
@@ -376,6 +453,7 @@
     <script src="js/database.js"></script>
     <script src="js/exports.js"></script>
     <script src="js/finance.js"></script>
+    <script src="js/tours.js"></script>
     <script src="js/ui.js"></script>
     <script src="app.js"></script>
 </body>

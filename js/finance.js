@@ -27,14 +27,31 @@ const CURRENCY_SETTINGS = {
 function calculateFinancialReport(bookings = []) {
     console.log('Calculating financial report for', bookings.length, 'bookings');
     
+    // Получаем актуальные цены из модуля tours
+    function getTourPrice(tourName) {
+        if (window.TolikCRM.tours && window.TolikCRM.tours.getTourPrice) {
+            return window.TolikCRM.tours.getTourPrice(tourName);
+        }
+        // Fallback to static prices if tours module not available
+        return EXCURSION_PRICES[tourName] || 0;
+    }
+    
+    // Получаем список всех доступных экскурсий
+    let availableExcursions = Object.keys(EXCURSION_PRICES);
+    if (window.TolikCRM.tours && window.TolikCRM.tours.getAllTours) {
+        const tours = window.TolikCRM.tours.getAllTours();
+        availableExcursions = tours.map(tour => tour.name);
+    }
+    
     // Группируем по экскурсиям
     const financialData = {};
     
     // Инициализируем данные для всех доступных экскурсий
-    Object.keys(EXCURSION_PRICES).forEach(excursionName => {
+    availableExcursions.forEach(excursionName => {
+        const price = getTourPrice(excursionName);
         financialData[excursionName] = {
             name: excursionName,
-            price: EXCURSION_PRICES[excursionName],
+            price: price,
             totalBookings: 0,
             totalParticipants: 0,
             paidParticipants: 0,
@@ -51,7 +68,7 @@ function calculateFinancialReport(bookings = []) {
     bookings.forEach(booking => {
         const excursionName = booking.excursionId;
         const participants = booking.participants || 0;
-        const price = EXCURSION_PRICES[excursionName] || 0;
+        const price = getTourPrice(excursionName);
         const revenue = participants * price;
         
         if (financialData[excursionName]) {
@@ -208,13 +225,26 @@ function populateFinanceFilters() {
     // Очищаем текущие опции (кроме "Все экскурсии")
     excursionSelect.innerHTML = '<option value="">Все экскурсии</option>';
     
-    // Добавляем все доступные экскурсии
-    Object.keys(EXCURSION_PRICES).forEach(excursionName => {
-        const option = document.createElement('option');
-        option.value = excursionName;
-        option.textContent = excursionName;
-        excursionSelect.appendChild(option);
-    });
+    // Получаем экскурсии из модуля tours если доступен
+    if (window.TolikCRM.tours && window.TolikCRM.tours.getAllTours) {
+        const tours = window.TolikCRM.tours.getAllTours();
+        tours
+            .filter(tour => tour.isActive)
+            .forEach(tour => {
+                const option = document.createElement('option');
+                option.value = tour.name;
+                option.textContent = tour.name;
+                excursionSelect.appendChild(option);
+            });
+    } else {
+        // Fallback to static prices
+        Object.keys(EXCURSION_PRICES).forEach(excursionName => {
+            const option = document.createElement('option');
+            option.value = excursionName;
+            option.textContent = excursionName;
+            excursionSelect.appendChild(option);
+        });
+    }
 }
 
 function setupFinanceEventListeners() {
